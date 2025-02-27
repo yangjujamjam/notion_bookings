@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>예약관리 및 텍스트 처리</title>
+  <!-- FullCalendar CSS/JS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <style>
+    /* style.css 및 예약관리.html의 인라인 스타일 통합 (&#8203;:contentReference[oaicite:0]{index=0}, :contentReference[oaicite:1]{index=1}) */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    textarea {
+        width: 100%;
+        height: 150px;
+        margin-bottom: 10px;
+        resize: none;
+        border: 1px solid #ccc;
+        padding: 10px;
+        font-size: 16px;
+    }
+    
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    
+    .left-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .right-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    button {
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    button:hover {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+    
+    /* 야놀자, 여기어때 버튼 (script.js의 일부 스타일, :contentReference[oaicite:2]{index=2}) */
+    #btn6 {
+        background: url('https://image6.yanolja.com/cx-ydm/9HprqrV5k1iHWTCo') no-repeat center center;
+        background-size: cover;
+        color: #000;
+        border: 1px solid #ccc;
+        font-weight: bold;
+    }
+    
+    #btn8 {
+        background: url('data:image/png;base64,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') no-repeat center center;
+        background-size: cover;
+        color: #000;
+        border: 1px solid #ccc;
+        font-weight: bold;
+    }
+    
+    pre {
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        padding: 10px;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin-top: 10px;
+    }
+    
+    /* 무통장, 숙박, 당일캠핑, 늦은입실, 빠른입실 버튼 */
+    #btn1 {
+        background-color: #00bcd4;
+        color: white;
+    }
+    
+    #btn2 {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    #btn3 {
+        background-color: #ffcc80;
+        color: black;
+    }
+    
+    #btn4 {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    #btn5 {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    /* 상단 메뉴 */
+    .top-menu {
+        background-color: #eee;
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+    .top-menu ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 20px;
+    }
+    .top-menu li {
+        display: inline;
+    }
+    .top-menu a {
+        text-decoration: none;
+        font-weight: bold;
+        color: #333;
+    }
+    .top-menu a:hover {
+        color: #666;
+    }
+    
+    /* 예약관리 테이블 및 달력 (예약관리.html) */
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 20px 0;
+    }
+    
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+    }
+    
+    #calendar {
+        max-width: 900px;
+        margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <header class="top-menu">
+    <nav>
+      <ul>
+        <li><a href="예약업무.html">예약업무</a></li>
+        <li><a href="예약관리.html">예약관리</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <h1>예약관리</h1>
+  <!-- 예약목록 테이블 -->
+  <table id="reservationTable">
+    <thead>
+      <tr>
+        <th>날짜(YYYY-MM-DD)</th>
+        <th>예약번호</th>
+        <th>객실타입</th>
+        <th>이용타입</th>
+        <th>예약자</th>
+        <th>원본안내문</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 예약 데이터가 여기에 추가됩니다. -->
+    </tbody>
+  </table>
+  
+  <!-- FullCalendar -->
+  <div id="calendar"></div>
+  
+  <hr>
+  
+  <h1>텍스트 처리 및 엑셀 복사</h1>
+  <section id="text-processing">
+    <div>
+      <h2>예약 안내문 포맷 변환</h2>
+      <textarea id="inputData" placeholder="예약 안내문을 입력하세요"></textarea>
+      <div class="button-container">
+        <div class="left-buttons">
+          <button id="btn1">무통장</button>
+          <button id="btn2">숙박</button>
+          <button id="btn3">당일캠핑</button>
+          <button id="btn4">늦은입실</button>
+          <button id="btn5">빠른입실</button>
+        </div>
+        <div class="right-buttons">
+          <button id="copyBtn">결과 복사</button>
+          <button id="excelCopyBtn">엑셀 복사(네이버)</button>
+          <button id="excelYanolja">엑셀 복사(야놀자)</button>
+          <button id="excelHere">엑셀 복사(여기어때)</button>
+        </div>
+      </div>
+      <textarea id="outputData" placeholder="변환 결과가 여기에 표시됩니다"></textarea>
+    </div>
+  
+    <div>
+      <h2>외부 데이터 포맷 변환</h2>
+      <textarea id="externalData" placeholder="야놀자/여기어때 원본 데이터를 입력하세요"></textarea>
+      <button id="formatBtn">포맷 변환</button>
+    </div>
+  </section>
+  
+  <!-- script.js (&#8203;:contentReference[oaicite:3]{index=3}) -->
+  <script>
+    const inputData = document.getElementById('inputData');
+    const outputData = document.getElementById('outputData');
+    const copyBtn = document.getElementById('copyBtn');
+    const btn5 = document.getElementById('btn5');
+    
+    // 경고 메시지 생성
+    const warningMessage = document.createElement('div');
+    warningMessage.textContent = '수량과 날짜를 확인하세요';
+    warningMessage.style.display = 'none';
+    warningMessage.style.position = 'relative';
+    warningMessage.style.marginLeft = '10px';
+    warningMessage.style.padding = '10px';
+    warningMessage.style.backgroundColor = 'red';
+    warningMessage.style.color = 'white';
+    warningMessage.style.fontSize = '16px';
+    warningMessage.style.borderRadius = '5px';
+    warningMessage.style.fontWeight = 'bold';
+    warningMessage.style.animation = 'blink-animation 1.5s infinite';
+    
+    if(btn5) {
+      btn5.insertAdjacentElement('afterend', warningMessage);
+    }
+    
+    function checkQuantityAndDate(text) {
+      const lines = text.split('\n');
+      let quantity = 0;
+      let days = 0;
+    
+      lines.forEach(line => {
+        if (line.includes('수량')) {
+          const match = line.match(/\d+/);
+          if (match) {
+            quantity = parseInt(match[0]);
+          }
+        }
+        if (line.includes('박')) {
+          const match = line.match(/(\d+)박\s*(\d+)일/);
+          if (match) {
+            days = parseInt(match[1]);
+          }
+        }
+      });
+    
+      if (quantity >= 2 || days >= 2) {
+        warningMessage.style.display = 'inline-block';
+      } else {
+        warningMessage.style.display = 'none';
+      }
+    }
+    
+    const formatButtons = document.querySelectorAll('#btn1, #btn2, #btn3, #btn4, #btn5');
+    formatButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (
+          button.id !== 'copyBtn' &&
+          button.id !== 'excelCopyBtn' &&
+          button.id !== 'excelYanolja' &&
+          button.id !== 'excelHere'
+        ) {
+          const filteredText = filterText(inputData.value);
+          checkQuantityAndDate(filteredText);
+          const formattedText = formatText(filteredText, button.id);
+          outputData.textContent = formattedText;
+        }
+      });
+    });
+    
+    if(copyBtn){
+      copyBtn.addEventListener('click', () => {
+        const textToCopy = outputData.textContent;
+        copyToClipboard(textToCopy);
+      });
+    }
+    
+    function copyToClipboard(text) {
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = text;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+      alert('결과가 복사되었습니다!');
+    }
+    
+    function filterText(text) {
+      let lines = text.split('\n');
+      const filterKeywords = [
+        '예약번호', '예약유형', '이메일', '예약내역', '유입경로', '예약자입력정보',
+        '( 예 : 대인2, 소인1, 유아1 )', '※종일권,야간권은 입실시간만 맞추어주세요.',
+        '결제예상정보', '결제정보', '결제상태', 'NPay주문번호', '결제수단'
+      ];
+      lines = lines.filter(line =>
+        line.trim() !== '' &&
+        !filterKeywords.some(keyword => line.includes(keyword))
+      );
+    
+      const unwantedOptionTexts = [
+        "인원수를 꼭 체크해주세요",
+        "수영장 및 외부시설 안내",
+        "파티룸 이용 전화상담필수",
+        "객실 시설 안내",
+        "당일캠핑 안내",
+        "무통장입금 안내"
+      ];
+      lines = lines.filter(line =>
+        !unwantedOptionTexts.some(phrase => line.includes(phrase))
+      );
+    
+      const optionsStartIndex = lines.findIndex(line => line.includes('옵션'));
+      const optionsEndIndex = lines.findIndex(line => line.includes('요청사항'));
+      if (optionsStartIndex !== -1 && optionsEndIndex !== -1) {
+        const optionsLines = lines
+          .slice(optionsStartIndex + 1, optionsEndIndex)
+          .filter(line => line.trim() !== '');
+        lines.splice(optionsStartIndex + 1, optionsEndIndex - optionsStartIndex - 1, ...optionsLines);
+      }
+    
+      const requestStartIndex = lines.findIndex(line => line.includes('요청사항'));
+      const requestEndIndex = lines.findIndex(line => line.includes('유입경로'));
+      if (requestStartIndex !== -1 && requestEndIndex !== -1) {
+        const requestLines = lines
+          .slice(requestStartIndex, requestEndIndex)
+          .filter(line => line.trim() !== '');
+        lines.splice(requestStartIndex, requestEndIndex - requestStartIndex, ...requestLines);
+      }
+    
+      return lines.join('\n');
+    }
+    
+    function formatText(text, buttonId) {
+      const lines = text.split('\n\n'); 
+      let checkInTime = "";
+      const siteLine = lines.find(line => line.includes('사이트'));
+      if (siteLine) {
+        const match = siteLine.match(/\[늦은입실\s*(\d+)시\]/);
+        if (match) {
+          checkInTime = match[1];
+        }
+      }
+    
+      switch (buttonId) {
+        case 'btn1':
+          return `고객님 예약 신청해 주셔서 
+진심으로 감사드립니다. 
+
+${text}
+
+*추가 옵션 설정을 정확하게 선택해 주셔야 되며 체크인 시 현장 결제도 가능합니다. (인원추가, 시간연장, 얼리체크인, 레이트체크아웃 / 바베큐, 불멍, 온수풀, 고기세트 별도)
+
+*숙박은 “15시”부터 입실 가능하며 수영은 13시부터 이용하실 수 있습니다. 
+얼리체크인을 원하실 경우 카톡으로 별도 문의주세요. 
+
+▶계좌번호  우리 1005 504 540028 (주) 유연음
+
+※입금 시 입금자, 예약자명이 동일해야 하며, 예약 안내 수신 후 "2시간 이내" 입금 확인이 안 될 시 자동 취소 처리됩니다.
+`;
+        case 'btn2':
+          text = text.replace('결제예상금액', '결제금액');
+          return `[양주잼잼] 예약해 주셔서 진심으로 감사합니다♬
+
+${text}
+
+*기준인원 2인 기준 요금이며 인원추가 미선택 시 현장에서 추가결제해 주셔야 합니다. 
+*옵션(바베큐, 불멍, 고기세트)은 별도이며 체크인 시 현장 결제도 가능합니다. 
+*대형풀 무료 이용 / 온수풀 유료 이용 
+
+*숙박은 “15시”부터 입실 가능하며 수영장 이용은 13시부터 이용하실 수 있습니다. 
+얼리체크인/레이트체크아웃을 원하실 경우 카톡 또는 문자로 별도 문의주세요. 
+
+☆리뷰 이벤트 참여 가능 
+(10만원 상당의 선물 증정)
+
+☆쿠폰 (이용완료 후에 사용 가능)
+-택시비 최대 10000원 지원 쿠폰
+-재방문 고객 10000원 할인 쿠폰
+
+체크인 또는 체크아웃 하실 때 관리동에 말씀해 주시면 환불처리 도와드립니다.^^
+`;
+        case 'btn3':
+          return `[양주잼잼] 예약해 주셔서 진심으로 감사합니다♬
+
+*기본 이용시간은 6시간이며 예약해주신 방문시간을 엄수해 주세요.
+
+${text}
+
+*2인 기준 요금이며 인원추가 미선택 시 현장에서 추가결제해 주셔야 합니다.
+ 
+*옵션(바베큐, 불멍, 고기세트)은 별도이며 체크인 시 현장 결제도 가능합니다. 
+
+*대형풀 무료 이용 / 온수풀 유료 이용 
+
+*예약 시 시간연장 신청을 안 할 경우에는 추가 시간연장이 불가할 수 있습니다. 당일 일정에 따라 입실 후에도 시간연장이 가능할 수 있으니 별도 문의 바랍니다.
+
+*빠른 입실을 원하시면 카톡 또는 문자로 가능 여부를 문의하시기 바랍니다. 시간연장은 30분, 1시간 단위로 가능하며 종일권( ~22시), 야간권(22시~ ) 상품도 있으니 참고바랍니다.
+
+☆리뷰 이벤트 참여 가능 
+(10만원 상당의 선물 증정)
+
+예약 내용 확인해보시고 수정 또는 변경해야할 내용이 있다면 말씀 부탁드립니다.
+
+(광고) 
+양손 가볍게, 잼잼 바베큐 키트 출시🍖
+https://litt.ly/jamjam_bbq
+`;
+        case 'btn4':
+          return `[양주잼잼] 예약해 주셔서 진심으로 감사합니다♬
+
+${text}
+
+*늦은입실 상품이라 입실시간은 ${checkInTime}시, 퇴실시간은 익일 11시이며
+대형수영장 이용시간은 당일 21시까지입니다. 
+
+*기준인원 2인 기준 요금이며 인원추가 미선택 시 현장에서 추가결제해 주셔야 합니다. 
+*옵션(바베큐, 불멍, 고기세트)은 별도이며 체크인 시 현장 결제도 가능합니다. 
+*대형풀 무료, 온수풀 유료
+
+☆리뷰 이벤트 참여 가능 
+(10만원 상당의 선물 증정)
+
+☆쿠폰 
+(이용완료 후에 쿠폰 사용이 가능합니다.)
+
+-택시비 최대 10000원 지원 쿠폰
+-재방문 고객 10000원 할인 쿠폰
+
+체크인 또는 체크아웃 하실 때 관리동에 말씀해 주시면 환불처리 도와드립니다.^^
+
+예약 내용 확인해보시고 수정 또는 변경해야할 내용이 있다면 말씀 부탁드립니다. 
+
+(광고) 
+양손 가볍게, 잼잼 바베큐 키트 출시🍖
+https://litt.ly/jamjam_bbq
+`;
+        case 'btn5':
+          return `[양주잼잼] 예약해 주셔서 진심으로 감사합니다♬
+
+${text}
+
+*빠른입실은 “9시”부터 입실 가능하며 수영장 이용은 13시부터 이용하실 수 있습니다. 
+얼리체크인/레이트체크아웃을 원하실 경우 카톡 또는 문자로 별도 문의주세요. 
+
+*기준인원 2인 기준 요금이며 인원추가 미선택 시 현장에서 추가결제해 주셔야 합니다. 
+*옵션(바베큐, 불멍, 고기세트)은 별도이며 체크인 시 현장 결제도 가능합니다. 
+*대형풀 무료 이용 / 온수풀 유료 이용 
+
+☆리뷰 이벤트 참여 가능 
+(10만원 상당의 선물 증정)
+
+☆쿠폰 (이용완료 후에 사용 가능)
+-택시비 최대 10000원 지원 쿠폰
+-재방문 고객 10000원 할인 쿠폰
+
+체크인 또는 체크아웃 하실 때 관리동에 말씀해 주시면 환불처리 도와드립니다.^^
+예약 내용 확인해보시고 수정 또는 변경해야할 내용이 있다면 말씀 부탁드립니다. 
+
+(광고) 
+양손 가볍게, 잼잼 바베큐 키트 출시🍖
+https://litt.ly/jamjam_bbq
+`;
+        case 'btn6': {
+          const details = parseYanoljaText(inputData.value);
+          return `[양주잼잼] 예약해 주셔서 진심으로 감사합니다♬
+
+야놀자로 예약하셨다면
+여기로 성함과 전화번호를 꼭 남겨주세요!
+
+${details}
+
+*기준인원 2인 기준 요금이며 인원추가 미선택 시 현장에서 추가결제해 주셔야 합니다.
+
+*옵션(바베큐, 불멍, 고기세트)은 별도이며 체크인 시 현장 결제도 가능합니다.
+*대형풀 무료 이용 / 온수풀 유료 이용
+
+*대실 이용시간은 6시간이며 예약해주신 방문시간을 엄수해 주세요.
+*숙박은 “15시”부터 입실 가능하며 수영장 이용은 13시부터 이용하실 수 있습니다.
+
+얼리체크인/레이트체크아웃을 원하실 경우 카톡 또는 문자로 별도 문의주세요.
+
+☆리뷰 이벤트 참여 가능
+(10만원 상당의 선물 증정)
+
+체크인 또는 체크아웃 하실 때 관리동에 말씀해 주시면 환불처리 도와드립니다.^^
+
+예약 내용 확인해보시고 수정 또는 변경해야할 내용이 있다면 말씀 부탁드립니다.
+
+(광고)
+양손 가볍게, 잼잼 바베큐 키트 출시🍖
+https://litt.ly/jamjam_bbq
+`;
+        }
+        case 'btn8': {
+          const details = parseHereText(inputData.value);
+          return `[양주잼잼] 예약해 주셔서 진심으로 감사합니다♬
+
+여기어때로 예약하셨다면
+여기로 성함과 전화번호를 꼭 남겨주세요!
+
+${details}
+
+*기준인원 2인 기준 요금이며 인원추가 미선택 시 현장에서 추가결제해 주셔야 합니다.
+
+*옵션(바베큐, 불멍, 고기세트)은 별도이며 체크인 시 현장 결제도 가능합니다.
+*대형풀 무료 이용 / 온수풀 유료 이용
+
+*숙박은 “15시”부터 입실 가능하며 수영장 이용은 13시부터 이용하실 수 있습니다.
+얼리체크인/레이트체크아웃을 원하실 경우 카톡 또는 문자로 별도 문의주세요.
+
+☆리뷰 이벤트 참여 가능
+(10만원 상당의 선물 증정)
+
+☆쿠폰 (이용완료 후에 사용 가능)
+-택시비 최대 10000원 지원 쿠폰
+-재방문 고객 10000원 할인 쿠폰
+
+체크인 또는 체크아웃 하실 때 관리동에 말씀해 주시면 환불처리 도 도와드립니다.^^
+
+예약 내용 확인해보시고 수정 또는 변경해야할 내용이 있다면 말씀 부탁드립니다.
+
+(광고)
+양손 가볍게, 잼잼 바베큐 키트 출시🍖
+https://litt.ly/jamjam_bbq
+`;
+        }
+        default:
+          return text;
+      }
+    }
+    
+    function parseYanoljaText(rawText) {
+      let roomType = "";
+      let price = "";
+      let name = "";
+      let phone = "";
+      let checkIn = "";
+      let checkOut = "";
+      let useType = "";
+    
+      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l !== '');
+    
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.startsWith('<') && line.endsWith('>')) {
+          useType = line.replace(/[<>]/g, '');
+        } else if (line.match(/원$/)) {
+          price = line;
+        } else if (line.includes('/') && line.includes(' ')) {
+          const parts = line.split('/');
+          if (parts.length >= 2) {
+            name = parts[0].trim();
+            phone = parts[1].trim();
+          }
+        } else if (line.includes('~')) {
+          checkIn = line;
+          if (i + 1 < lines.length) {
+            checkOut = lines[i + 1];
+          }
+        } else if (line.includes('카라반') || line.includes('복층') || line.includes('파티룸') || line.includes('몽골')) {
+          roomType = line;
+        }
+      }
+    
+      if (!checkOut) {
+        checkOut = "체크아웃 시간은 별도 확인";
+      }
+    
+      return `- 이용타입: ${useType}
+- 객실타입: ${roomType}
+- 예약자: ${name}
+- 전화번호: ${phone}
+- 체크인: ${checkIn}
+- 체크아웃: ${checkOut}
+- 결제금액: ${price}
+- (기준 인원: 대인2)`;
+    }
+    
+    function parseHereText(rawText) {
+      let roomType = "";
+      let price = "";
+      let name = "";
+      let phone = "";
+      let checkIn = "";
+      let checkOut = "";
+    
+      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l);
+    
+      lines.forEach(line => {
+        if (line.startsWith('객실정보:')) {
+          roomType = line.replace('객실정보:', '').trim();
+        } else if (line.startsWith('판매금액:')) {
+          price = line.replace('판매금액:', '').trim();
+        } else if (line.startsWith('예약자명 :')) {
+          name = line.replace('예약자명 :', '').trim();
+        } else if (line.startsWith('안심번호:')) {
+          phone = line.replace('안심번호:', '').trim();
+        } else if (line.startsWith('입실일시:')) {
+          checkIn = line.replace('입실일시:', '').trim();
+        } else if (line.startsWith('퇴실일시:')) {
+          checkOut = line.replace('퇴실일시:', '').trim();
+        }
+      });
+    
+      return `- 객실정보: ${roomType}
+- 예약자: ${name}
+- 전화번호: ${phone}
+- 입실일시: ${checkIn}
+- 퇴실일시: ${checkOut}
+- 결제금액: ${price}
+- (기준 인원: 대인2, 이용타입: 숙박)`;
+    }
+  </script>
+  
+  <!-- script2.js (&#8203;:contentReference[oaicite:4]{index=4}) -->
+  <script>
+    document.getElementById('excelCopyBtn')?.addEventListener('click', function() {
+      const inputText = document.getElementById('inputData').value;
+  
+      const filteredLines = inputText.split('\n').filter(line => {
+          const unwantedKeywords = [
+              '예약번호', '예약유형', '이메일', '예약내역', '데이유즈',
+              '1박 2일', '2박 3일', '3박 4일', '수량', '결제정보', '결제상태',
+              'NPay주문번호', '결제수단', '! 인원수를 꼭 체크해주세요.'
+          ];
+          return !unwantedKeywords.some(keyword => line.includes(keyword));
+      });
+  
+      let result = [];
+      let paymentAmount = '';
+      let checkInTime = '';
+      let isProcessingOptions = false;
+      let optionDetails = [];
+      let optionColumns = [
+          'AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP'
+      ];
+  
+      result.push(Array(50).fill(''));
+  
+      for (let i = 0; i < filteredLines.length; i++) {
+          const line = filteredLines[i].trim();
+  
+          if (line.includes('예약자')) {
+              const parts = line.split(/\s+/);
+              if (parts.length > 1) {
+                  result[0][3] = parts[1];
+              }
+          } else if (line.includes('전화번호')) {
+              const parts = line.split(/\s+/);
+              if (parts.length > 1) {
+                  result[0][4] = parts[1];
+              }
+          } else if (line.includes('사이트')) {
+              const siteInfo = line.split('\t')[1] || '';
+              const isMutong = siteInfo.includes('무통장');
+              result[0][2] = isMutong ? '네이버무통장' : '네이버확정';
+              const siteName = siteInfo.replace(/\[.*?\]/g, '').trim();
+              result[0][8] = siteName;
+          } else if (line.includes('총 이용 인원 정보')) {
+              if (i + 1 < filteredLines.length) {
+                  const pplLine = filteredLines[i + 1].trim();
+                  if (pplLine !== '') {
+                      result[0][6] = pplLine;
+                  }
+              }
+          } else if (line.includes('입실 시간 선택')) {
+              if (i + 1 < filteredLines.length) {
+                  const checkInTimeLine = filteredLines[i + 1].trim();
+                  if (checkInTimeLine !== '') {
+                      checkInTime = checkInTimeLine;
+                  }
+              }
+          } else if (line.includes('이용기간')) {
+              result[0][7] = line.replace('이용기간','').trim();
+          }
+  
+          if (line.includes('결제금액') || line.includes('결제예상금액')) {
+              const parts = line.split(/\s+/);
+              if (parts.length > 1) {
+                  paymentAmount = parts[1];
+              }
+          }
+  
+          if (line.includes('옵션')) {
+              isProcessingOptions = true;
+              continue;
+          }
+          if (isProcessingOptions && (line.includes('유입경로') || line.includes('요청사항'))) {
+              isProcessingOptions = false;
+              continue;
+          }
+          if (isProcessingOptions && line !== '') {
+              if (!line.includes('쿠폰')) {
+                  optionDetails.push(line);
+              }
+          }
+      }
+  
+      for (let j = 0; j < optionDetails.length && j < optionColumns.length; j++) {
+          result[0][27 + j] = optionDetails[j];
+      }
+  
+      result[0][9] = '=TEXTJOIN(CHAR(10), TRUE,' +
+          'INDIRECT("AB" & ROW()),INDIRECT("AC" & ROW()),INDIRECT("AD" & ROW()),INDIRECT("AE" & ROW()),INDIRECT("AF" & ROW()),' +
+          'INDIRECT("AG" & ROW()),INDIRECT("AH" & ROW()),INDIRECT("AI" & ROW()),INDIRECT("AJ" & ROW()),INDIRECT("AK" & ROW()),' +
+          'INDIRECT("AL" & ROW()),INDIRECT("AM" & ROW()),INDIRECT("AN" & ROW()),INDIRECT("AO" & ROW()),INDIRECT("AP" & ROW()))';
+  
+      if (checkInTime !== '') {
+          result[0][45] = checkInTime;
+      }
+      if (paymentAmount !== '') {
+          result[0][26] = paymentAmount;
+      }
+  
+      const excelFormattedText = result.map(row => row.join('\t')).join('\n');
+  
+      navigator.clipboard.writeText(excelFormattedText)
+          .then(() => {
+              alert("엑셀 형식으로 복사되었습니다!(네이버)");
+          })
+          .catch(err => {
+              console.error('클립보드 복사 실패:', err);
+              alert("클립보드 복사에 실패했습니다. 브라우저 설정을 확인해주세요.");
+          });
+  
+      saveExcelToStorage(excelFormattedText);
+    });
+    
+    document.getElementById('excelYanolja')?.addEventListener('click', function() {
+        const rawText = document.getElementById('inputData').value;
+        const data = parseYanoljaForExcel(rawText);
+    
+        let result = [];
+        result.push(Array(50).fill(''));
+    
+        result[0][2] = data.channel; 
+        result[0][3] = data.name;
+        result[0][4] = data.phone;
+        result[0][6] = data.people; 
+        result[0][7] = data.dateInfo;
+        result[0][8] = data.roomType;
+        result[0][26] = data.price;
+        result[0][9] = '';
+    
+        const excelFormattedText = result.map(row => row.join('\t')).join('\n');
+    
+        navigator.clipboard.writeText(excelFormattedText).then(() => {
+            alert("엑셀 형식으로 복사되었습니다!(야놀자)");
+        });
+    
+        saveExcelToStorage(excelFormattedText);
+    });
+    
+    document.getElementById('excelHere')?.addEventListener('click', function() {
+        const rawText = document.getElementById('inputData').value;
+        const data = parseHereForExcel(rawText);
+    
+        let result = [];
+        result.push(Array(50).fill(''));
+    
+        result[0][2] = data.channel;
+        result[0][3] = data.name;
+        result[0][4] = data.phone;
+        result[0][6] = data.people;
+        result[0][7] = data.dateInfo;
+        result[0][8] = data.roomType;
+        result[0][26] = data.price;
+        result[0][9] = '';
+    
+        const excelFormattedText = result.map(row => row.join('\t')).join('\n');
+    
+        navigator.clipboard.writeText(excelFormattedText).then(() => {
+            alert("엑셀 형식으로 복사되었습니다!(여기어때)");
+        });
+    
+        saveExcelToStorage(excelFormattedText);
+    });
+    
+    function parseYanoljaForExcel(text) {
+        let channel = "야놀자";
+        let roomType = "";
+        let name = "";
+        let phone = "";
+        let price = "";
+        let checkInLine = "";
+        let checkOutLine = "";
+        let people = "대인2";
+    
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.startsWith('<') && line.endsWith('>')) {
+            } else if (line.match(/원$/)) {
+                price = line;
+            } else if (line.includes('/') && line.includes(' ')) {
+                const parts = line.split('/');
+                name = parts[0].trim();
+                phone = parts[1].trim();
+            } else if (line.includes('카라반') || line.includes('복층') || line.includes('파티룸') || line.includes('몽골')) {
+                roomType = line;
+            } else if (line.includes('~')) {
+                if (!checkInLine) checkInLine = line;
+                else checkOutLine = line;
+            }
+        }
+    
+        let dateInfo = '';
+        if (checkInLine) dateInfo += checkInLine;
+        if (checkOutLine) dateInfo += ' ~ ' + checkOutLine;
+    
+        return {
+            channel,
+            roomType,
+            name,
+            phone,
+            price,
+            people,
+            dateInfo
+        };
+    }
+    
+    function parseHereForExcel(text) {
+        let channel = "여기어때";
+        let roomType = "";
+        let price = "";
+        let name = "";
+        let phone = "";
+        let checkIn = "";
+        let checkOut = "";
+        let people = "대인2";
+    
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.startsWith('객실정보:')) {
+                roomType = line.replace('객실정보:', '').trim();
+            } else if (line.startsWith('판매금액:')) {
+                price = line.replace('판매금액:', '').trim();
+            } else if (line.startsWith('예약자명 :')) {
+                name = line.replace('예약자명 :', '').trim();
+            } else if (line.startsWith('안심번호:')) {
+                phone = line.replace('안심번호:', '').trim();
+            } else if (line.startsWith('입실일시:')) {
+                checkIn = line.replace('입실일시:', '').trim();
+            } else if (line.startsWith('퇴실일시:')) {
+                checkOut = line.replace('퇴실일시:', '').trim();
+            }
+        }
+    
+        let dateInfo = `${checkIn} ~ ${checkOut}`;
+    
+        return {
+            channel,
+            roomType,
+            name,
+            phone,
+            price,
+            people,
+            dateInfo
+        };
+    }
+    
+    function saveExcelToStorage(excelText) {
+        let list = JSON.parse(localStorage.getItem('excelDataList')) || [];
+        let newItem = {
+            timestamp: new Date().toLocaleString(),
+            text: excelText
+        };
+        list.push(newItem);
+        localStorage.setItem('excelDataList', JSON.stringify(list));
+    }
+  </script>
+  
+  <!-- script5.js (&#8203;:contentReference[oaicite:5]{index=5}) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const externalData = document.getElementById('externalData');
+        const outputData = document.getElementById('outputData');
+        const formatBtn = document.getElementById('formatBtn');
+    
+        if (!externalData || !formatBtn) {
+            return;
+        }
+    
+        function parseExternalText(text) {
+            const lines = text.split('\n');
+            const reservationData = {
+                예약자: '',
+                전화번호: '',
+                사이트: '',
+                이용기간: '',
+                결제금액: ''
+            };
+    
+            if (text.includes('야놀자 미리예약')) {
+                let isNextLinePartOfDate = false;
+    
+                lines.forEach(line => {
+                    line = line.trim();
+    
+                    if (isNextLinePartOfDate) {
+                        reservationData.이용기간 += ` ~ ${line}`;
+                        isNextLinePartOfDate = false;
+                        return;
+                    }
+    
+                    if (line.includes('/')) {
+                        const [name, phone] = line.split('/');
+                        reservationData.예약자 = name.trim();
+                        reservationData.전화번호 = phone.trim();
+                    } else if (line.includes('(') && line.includes(')') && !line.includes('~')) {
+                        reservationData.사이트 = line.trim();
+                    } else if (line.includes('~')) {
+                        reservationData.이용기간 = line;
+                        isNextLinePartOfDate = true;
+                    } else if (line.includes('원')) {
+                        reservationData.결제금액 = line.trim();
+                    }
+                });
+            }
+            else if (text.includes('[여기어때]')) {
+                lines.forEach(line => {
+                    line = line.trim();
+    
+                    if (line.startsWith('예약자명 :')) {
+                        reservationData.예약자 = line.replace('예약자명 :', '').trim();
+                    } else if (line.startsWith('안심번호:')) {
+                        reservationData.전화번호 = line.replace('안심번호:', '').trim();
+                    } else if (line.startsWith('객실정보:')) {
+                        reservationData.사이트 = line.replace('객실정보:', '').trim();
+                    } else if (line.startsWith('입실일시:')) {
+                        const checkIn = line.replace('입실일시:', '').trim();
+                        const checkOut = lines.find(l => l.startsWith('퇴실일시:'));
+                        if (checkOut) {
+                            reservationData.이용기간 = `${checkIn} ~ ${checkOut.replace('퇴실일시:', '').trim()}`;
+                        }
+                    } else if (line.startsWith('판매금액:')) {
+                        reservationData.결제금액 = line.replace('판매금액:', '').trim();
+                    }
+                });
+            } else {
+                return text;
+            }
+    
+            return `예약자\t${reservationData.예약자}\n` +
+                   `전화번호\t${reservationData.전화번호}\n` +
+                   `사이트\t${reservationData.사이트}\n` +
+                   `이용기간\t${reservationData.이용기간}\n` +
+                   `결제금액\t${reservationData.결제금액}\n`;
+        }
+    
+        formatBtn.addEventListener('click', () => {
+            const externalText = externalData.value;
+            const filteredText = parseExternalText(externalText);
+            outputData.textContent = filteredText;
+        });
+    });
+  </script>
+  
+  <!-- 예약관리.html의 FullCalendar 관련 스크립트 (&#8203;:contentReference[oaicite:6]{index=6}) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      function loadCalendarFromTable() {
+        const table = document.getElementById('reservationTable');
+        if (!table) return;
+    
+        let events = [];
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach((row) => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length < 5) return;
+    
+          const dateYMD = cells[0].textContent.trim();
+          const reservationId = cells[1].textContent.trim();
+          const roomType = cells[2].textContent.trim();
+          const usageType = cells[3].textContent.trim();
+          const reserver = cells[4].textContent.trim();
+          const rawText = cells[5].textContent.trim();
+    
+          let bgColor = "";
+          if (usageType === "대") {
+            bgColor = "peachpuff";
+          } else {
+            if (roomType.includes("카라반")) {
+              bgColor = "blue";
+            } else if (roomType.includes("캐빈")) {
+              bgColor = "yellow";
+            }
+          }
+    
+          const eventTitle = `${roomType} ${reserver}`.trim();
+    
+          events.push({
+            id: reservationId,
+            title: eventTitle,
+            start: dateYMD,
+            allDay: true,
+            backgroundColor: bgColor,
+            extendedProps: {
+              rawText: rawText
+            }
+          });
+        });
+    
+        const calendarEl = document.getElementById('calendar');
+        if (window.myCalendar) {
+          window.myCalendar.destroy();
+        }
+    
+        window.myCalendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          locale: 'ko',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listWeek'
+          },
+          events: events,
+          eventClick: function(info) {
+            const raw = info.event.extendedProps.rawText || "(원본 없음)";
+            alert(
+              "예약번호: " + info.event.id + "\n" +
+              "일정: " + info.event.title + "\n" +
+              "날짜: " + info.event.startStr + "\n\n" +
+              "[원본안내문]\n" + raw
+            );
+          }
+        });
+        window.myCalendar.render();
+      }
+    
+      loadCalendarFromTable();
+    });
+  </script>
+</body>
+</html>
